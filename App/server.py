@@ -84,15 +84,36 @@ def message_handler(event):
     if "help" not in message.lower():
         try :
             # run command
-            # hostname,username,password = get_ssh_details(sender_id)
-            # shell_commands(hostname,username,password)
+            hostname,username,password = getUser(sender_id)
+            shell_commands(hostname,username,password)
             page.send(sender_id,"Running ssh commmand")
             print("Bot results!")
         except:
+            quick_replies = [
+            QuickReply(title="Yeah !", payload="PICK_SSH"),
+            QuickReply(title="Nah ", payload="PICK_SSH")
+            ]
+    page.send(sender_id, "Would you like to configure your ssh ",quick_replies=quick_replies,metadata="DEVELOPER_DEFINED_METADATA")
             page.send(sender_id,"Error Occured: try `help` ")
+    elif "username" in message.lower():
+        try:
+            hostname,username, password= message.split()
+            hostname = hostname.index("hostname")
+            password = password.index("password")
+            username = username.index("username")
+        except:
+            print("Some Error occured ;(")
     else:
         page.send(sender_id,"Provide Help: Carousel")
     
+@page.callback(['PICK_SSH', 'PICK_SSH'])
+def callback_picked_genre(payload, event):
+    sender_id = event.sender_id
+    if payload == "PICK_SSH":
+        page.send(sender_id,"Please Share your credentials \n ( format id: username hostname password ) ")      # TODO
+    else:
+        page.send(sender_id,"That's just fine")
+
 
 @page.callback(['MENU_PAYLOAD/(.+)'])
 def click_persistent_menu(payload, event):

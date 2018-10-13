@@ -4,7 +4,7 @@ __pycache__/
 *$py.class
 
 # ignore private file
-**./config.py
+config.py
 
 # C extensions
 *.so
