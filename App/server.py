@@ -8,17 +8,15 @@ has globals : primary_key
 import os,random
 parentdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 os.sys.path.insert(0,parentdir)
-
 from flask import Flask, request, send_from_directory, render_template
-
 import pickle
 import messenger
 from config import CONFIG
 from fbpage import page
 from fbmq import Attachment,Template,QuickReply
 import pandas as pd
-import apiai
 import json
+
 app = Flask(__name__)
 
 
@@ -82,11 +80,15 @@ def message_handler(event):
     page.typing_off(sender_id)
 
     #print(user_profile)
-    if bot(message,sender_id):
-        print("Bot results")
+    if "help" not in message.lower():
+        try :
+            # run command
+            print("Bot results!")
+        except:
+            page.send(sender_id,"Error Occured")
     else:
         page.send(sender_id,"Didn't get you ")
-
+    
 
 @page.callback(['MENU_PAYLOAD/(.+)'])
 def click_persistent_menu(payload, event):
