@@ -13,6 +13,7 @@ import pickle
 import messenger
 from config import CONFIG
 from fbpage import page
+import spur
 from fbmq import Attachment,Template,QuickReply
 import pandas as pd
 import json
@@ -83,11 +84,14 @@ def message_handler(event):
     if "help" not in message.lower():
         try :
             # run command
+            # hostname,username,password = get_ssh_details(sender_id)
+            # shell_commands(hostname,username,password)
+            page.send(sender_id,"Running ssh commmand")
             print("Bot results!")
         except:
-            page.send(sender_id,"Error Occured")
+            page.send(sender_id,"Error Occured: try `help` ")
     else:
-        page.send(sender_id,"Didn't get you ")
+        page.send(sender_id,"Provide Help: Carousel")
     
 
 @page.callback(['MENU_PAYLOAD/(.+)'])
@@ -96,94 +100,99 @@ def click_persistent_menu(payload, event):
     page.send(event.sender_id,"you clicked %s menu" % (click_menu))
 
 
-@app.route('/authorize', methods=['GET'])
-def authorize():
-    account_linking_token = request.args.get('account_linking_token', '')
-    redirect_uri = request.args.get('redirect_uri', '')
+# @app.route('/authorize', methods=['GET'])
+# def authorize():
+#     account_linking_token = request.args.get('account_linking_token', '')
+#     redirect_uri = request.args.get('redirect_uri', '')
 
-    auth_code = '1234567890'
+#     auth_code = '1234567890'
 
-    redirect_uri_success = redirect_uri + "&authorization_code=" + auth_code
+#     redirect_uri_success = redirect_uri + "&authorization_code=" + auth_code
 
-    return render_template('authorize.html', data={
-        'account_linking_token': account_linking_token,
-        'redirect_uri': redirect_uri,
-        'redirect_uri_success': redirect_uri_success
-    })
+#     return render_template('authorize.html', data={
+#         'account_linking_token': account_linking_token,
+#         'redirect_uri': redirect_uri,
+#         'redirect_uri_success': redirect_uri_success
+#     })
 
-# only issue , sends blobs
-##@app.before_first_request
-def bot(text_message,sender_id):
+# # only issue , sends blobs
+# ##@app.before_first_request
+# def bot(text_message,sender_id):
 
-    Access_token = "8f88a5431e7d4bc1b07470b6e3eeee7d"
-    client = apiai.ApiAI(Access_token)
-    print("="*100)
-    req = client.text_request()
-    req.lang = "de"
-    req.session_id = "<SESSION ID, UNIQUE FOR EACH USER>"
-    req.query = text_message
-    response = json.loads(req.getresponse().read().decode('utf-8'))
-    responseStatus = response['status']['code']
+#     Access_token = "8f88a5431e7d4bc1b07470b6e3eeee7d"
+#     client = apiai.ApiAI(Access_token)
+#     print("="*100)
+#     req = client.text_request()
+#     req.lang = "de"
+#     req.session_id = "<SESSION ID, UNIQUE FOR EACH USER>"
+#     req.query = text_message
+#     response = json.loads(req.getresponse().read().decode('utf-8'))
+#     responseStatus = response['status']['code']
 
-    if responseStatus==200 :
-        text = response['result']['fulfillment']['speech']
-    else:
-        text="No Match Found"
+#     if responseStatus==200 :
+#         text = response['result']['fulfillment']['speech']
+#     else:
+#         text="No Match Found"
 
-    if len(response['result']['contexts']):
-        context = response['result']['contexts'][0]['parameters'] #extract parameters
-        Query = context['type'] #get the type of query
-        shorten_name = context['News'] #get the value of news
-        print(context)
-        if Query == "subscribe" :
-            text = "added "+shorten_name+" to your feed"
-            page.send(sender_id,text)
-            #print(type(sender_id))
-            #print(shorten_name)
-            #subscribe.subChannel(str(sender_id),shorten_name)
-        elif Query == "unsubscribe":
-            text = "removing "+shorten_name+" from your feed"
-            page.send(sender_id,text)
-            #subscribe.unsubChannel(str(sender_id),shorten_name)
-        elif Query == "summary":
-            text="generating your summary"
-            page.send(sender_id,text)
-            url = text_message.split()[-1]
-            if 'http' not in url:
-                url='https://'+url
-            sumar = ""
-            for h in headline:
-                sumar += h
-            text = title+" \n "+sumar
-            page.send(sender_id,text)
-        elif Query == "id":
-            user_name = text_message.split()[-1]
-            #subscribe.addUser(sender_id,user_name)
-            text = "You've been synced "
-            page.send(sender_id,text)
-            print("User Added")
-        else:
-            print("here")
-            text="loading the latest news from "+shorten_name
-            page.send(sender_id,text)
-            # page.send(sender_id,"Entity : %s \nValue : %s \nConfidence : %s "%(entin[0],result[entin[0]][0]['value'],result[entin[0]][0]['confidence']*100))
-            if results == False:
-                return False
-            # gen articles send 1st
-            page.send(sender_id,Template.Generic(results))
+#     if len(response['result']['contexts']):
+#         context = response['result']['contexts'][0]['parameters'] #extract parameters
+#         Query = context['type'] #get the type of query
+#         shorten_name = context['News'] #get the value of news
+#         print(context)
+#         if Query == "subscribe" :
+#             text = "added "+shorten_name+" to your feed"
+#             page.send(sender_id,text)
+#             #print(type(sender_id))
+#             #print(shorten_name)
+#             #subscribe.subChannel(str(sender_id),shorten_name)
+#         elif Query == "unsubscribe":
+#             text = "removing "+shorten_name+" from your feed"
+#             page.send(sender_id,text)
+#             #subscribe.unsubChannel(str(sender_id),shorten_name)
+#         elif Query == "summary":
+#             text="generating your summary"
+#             page.send(sender_id,text)
+#             url = text_message.split()[-1]
+#             if 'http' not in url:
+#                 url='https://'+url
+#             sumar = ""
+#             for h in headline:
+#                 sumar += h
+#             text = title+" \n "+sumar
+#             page.send(sender_id,text)
+#         elif Query == "id":
+#             user_name = text_message.split()[-1]
+#             #subscribe.addUser(sender_id,user_name)
+#             text = "You've been synced "
+#             page.send(sender_id,text)
+#             print("User Added")
+#         else:
+#             print("here")
+#             text="loading the latest news from "+shorten_name
+#             page.send(sender_id,text)
+#             # page.send(sender_id,"Entity : %s \nValue : %s \nConfidence : %s "%(entin[0],result[entin[0]][0]['value'],result[entin[0]][0]['confidence']*100))
+#             if results == False:
+#                 return False
+#             # gen articles send 1st
+#             page.send(sender_id,Template.Generic(results))
 
-            # page.send(sender_id, Template.Buttons(results[1][:200],results[2]))
-        return True
-    else:
-        page.send(sender_id,text)
-        return True
-        '''
-        ListView Template
-        page.send(sender_id,Template.List(elements = results,top_element_style='large',
-            buttons=[
-                { "title": "View Less", "type": "postback", "payload": "payload"}]))
-        '''
+#             # page.send(sender_id, Template.Buttons(results[1][:200],results[2]))
+#         return True
+#     else:
+#         page.send(sender_id,text)
+#         return True
+#         '''
+#         ListView Template
+#         page.send(sender_id,Template.List(elements = results,top_element_style='large',
+#             buttons=[
+#                 { "title": "View Less", "type": "postback", "payload": "payload"}]))
+#         '''
 
+def shell_commands():
+    shell = spur.SshShell(hostname="", username="", password="",missing_host_key=spur.ssh.MissingHostKey.accept)
+    with shell:
+        result = shell.run(["ls"])
+    print(result.output) # PARSE
 
 # Triggered off "PostBack Called"
 @page.callback(['DEVELOPED_DEFINED_PAYLOAD(.+)'],types=['POSTBACK'])
