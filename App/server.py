@@ -32,25 +32,25 @@ def validate():
     else:
         return 'Failed validation. Make sure the validation tokens match.'
 
-page.show_starting_button("START_PAYLOAD")       # Getting Started
+# page.show_starting_button("START_PAYLOAD")       # Getting Started
 
-@page.callback(['START_PAYLOAD'])
-def start_callback(payload, event):
-    sender_id = event.sender_id
-    quick_replies = [
-            QuickReply(title="Yeah !", payload="PICK_SYNC"),
-            QuickReply(title="Nah ", payload="PICK_DSYNC")
-            ]
-    page.send(sender_id, "Would you like to sync this conversation ?\n you can subscribe etc. ",quick_replies=quick_replies,metadata="DEVELOPER_DEFINED_METADATA")
-    print("Let's start!")
+# @page.callback(['START_PAYLOAD'])
+# def start_callback(payload, event):
+#     sender_id = event.sender_id
+#     quick_replies = [
+#             QuickReply(title="Yeah !", payload="PICK_SYNC"),
+#             QuickReply(title="Nah ", payload="PICK_DSYNC")
+#             ]
+#     page.send(sender_id, "Would you like to sync this conversation ?\n you can subscribe etc. ",quick_replies=quick_replies,metadata="DEVELOPER_DEFINED_METADATA")
+#     print("Let's start!")
 
-@page.callback(['PICK_SYNC', 'PICK_DSYNC'])
-def callback_picked_genre(payload, event):
-    sender_id = event.sender_id
-    if payload == "PICK_SYNC":
-        page.send(sender_id,"Please Share your *Briefly* username \n ( format id: username ) ")      # TODO
-    else:
-        page.send(sender_id,"Go ahead ;) Play Around for some time ")
+# @page.callback(['PICK_SYNC', 'PICK_DSYNC'])
+# def callback_picked_genre(payload, event):
+#     sender_id = event.sender_id
+#     if payload == "PICK_SYNC":
+#         page.send(sender_id,"Please Share your *Briefly* username \n ( format id: username ) ")      # TODO
+#     else:
+#         page.send(sender_id,"Go ahead ;) Play Around for some time ")
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
@@ -81,18 +81,41 @@ def message_handler(event):
     page.typing_off(sender_id)
 
     #print(user_profile)
-    if "help" not in message.lower():
+    if "username" in message.lower():
+        try:
+            hostname,username, password = message.split("\n")
+            hostname = hostname[9:]
+            password = password[9:]
+            username = username[9:]
+
+            print(hostname,username,password)
+            addUser(sender_id,hostname,username,password)
+            page.send(sender_id,"Go Ahead! Have Fun! ")
+        except:
+            page.send(sender_id,"Error Occured: try `help` ")
+    elif "help" not in message.lower():
         try :
-            # run command
-            # hostname,username,password = get_ssh_details(sender_id)
-            # shell_commands(hostname,username,password)
+            hostname,username,password = getUser(sender_id)
+            shell_commands(hostname,username,password)
             page.send(sender_id,"Running ssh commmand")
             print("Bot results!")
         except:
-            page.send(sender_id,"Error Occured: try `help` ")
+            quick_replies = [
+            QuickReply(title="Yeah !", payload="PICK_SSH"),
+            QuickReply(title="Nah ", payload="PICK_NSSH")
+            ]
+            page.send(sender_id, "Would you like to configure your ssh ",quick_replies=quick_replies,metadata="DEVELOPER_DEFINED_METADATA")
     else:
         page.send(sender_id,"Provide Help: Carousel")
     
+@page.callback(['PICK_SSH', 'PICK_NSSH'])
+def callback_picked_genre(payload, event):
+    sender_id = event.sender_id
+    if payload == "PICK_SSH":
+        page.send(sender_id,"Please Share your credentials \n ( format id: username hostname password ) ")      # TODO
+    else:
+        page.send(sender_id,"That's just fine")
+
 
 @page.callback(['MENU_PAYLOAD/(.+)'])
 def click_persistent_menu(payload, event):
