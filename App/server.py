@@ -13,10 +13,7 @@ from flask import Flask, request, send_from_directory, render_template
 
 import pickle
 import messenger
-import subscribe
 from config import CONFIG
-import newspaper
-from newspaper import Config
 from fbpage import page
 from fbmq import Attachment,Template,QuickReply
 import pandas as pd
@@ -118,6 +115,7 @@ def bot(text_message,sender_id):
 
     Access_token = "8f88a5431e7d4bc1b07470b6e3eeee7d"
     client = apiai.ApiAI(Access_token)
+    print("="*100)
     req = client.text_request()
     req.lang = "de"
     req.session_id = "<SESSION ID, UNIQUE FOR EACH USER>"
@@ -140,18 +138,17 @@ def bot(text_message,sender_id):
             page.send(sender_id,text)
             #print(type(sender_id))
             #print(shorten_name)
-            subscribe.subChannel(str(sender_id),shorten_name)
+            #subscribe.subChannel(str(sender_id),shorten_name)
         elif Query == "unsubscribe":
             text = "removing "+shorten_name+" from your feed"
             page.send(sender_id,text)
-            subscribe.unsubChannel(str(sender_id),shorten_name)
+            #subscribe.unsubChannel(str(sender_id),shorten_name)
         elif Query == "summary":
             text="generating your summary"
             page.send(sender_id,text)
             url = text_message.split()[-1]
             if 'http' not in url:
                 url='https://'+url
-            title,publish_date,image,headline = subscribe.summary(url)
             sumar = ""
             for h in headline:
                 sumar += h
@@ -159,7 +156,7 @@ def bot(text_message,sender_id):
             page.send(sender_id,text)
         elif Query == "id":
             user_name = text_message.split()[-1]
-            subscribe.addUser(sender_id,user_name)
+            #subscribe.addUser(sender_id,user_name)
             text = "You've been synced "
             page.send(sender_id,text)
             print("User Added")
@@ -168,7 +165,6 @@ def bot(text_message,sender_id):
             text="loading the latest news from "+shorten_name
             page.send(sender_id,text)
             # page.send(sender_id,"Entity : %s \nValue : %s \nConfidence : %s "%(entin[0],result[entin[0]][0]['value'],result[entin[0]][0]['confidence']*100))
-            results = generate_summaries(shorten_name,max_sentences)
             if results == False:
                 return False
             # gen articles send 1st
@@ -187,55 +183,6 @@ def bot(text_message,sender_id):
         '''
 
 
-def generate_summaries(name,sentences):
-    # NOTE : we don't need to store summary , instead storing the links would be enough .
-
-    articles = subscribe.subscribe_model(name)      # link , headline , date==None , image_url , sentences(list)
-    if articles == None :
-        return False
-    results = []
-    '''
-    Set a "View More Articles" Option Over here instead of max_articles
-    '''
-    for article in articles:
-        # breakpoint tests
-        '''
-        Issue : Default use of Generic Template <subtitle section> 60chars, <title section> 60 chars ,List view( No - Image ) 640 chars
-
-        '''
-        article_url = article[0]
-        headline = article[1]
-        publish_date = article[2]
-        top_image_url  = article[3]
-        summary_list = []
-        concate_news = headline
-        if len(article)==5:
-            concate_news = article[4]
-
-        # recheck TODO
-        sum_keys = sorted(SUMMARIES.keys())
-
-        if len(sum_keys) > max_local_summaries :
-            del SUMMARIES[sum_keys[0]]
-
-        if not len(sum_keys):
-            hash_index = 0
-        else:
-            hash_index = sum_keys[-1]
-
-        results.append(Template.GenericElement(headline,
-                subtitle = name ,
-                image_url = top_image_url,
-                buttons=[
-                        Template.ButtonWeb("Read More", article_url),
-                        Template.ButtonPostBack("Summarize", "DEVELOPED_DEFINED_PAYLOAD" + str(hash_index+1)),    #     maybe a SHARE button ?
-                            # Template.ButtonPhoneNumber("Call Phone Number", "+16505551234")
-                        ])
-                )
-        SUMMARIES[hash_index+1] = [top_image_url,concate_news]
-    print("reached Line:227")
-    return results
-
 # Triggered off "PostBack Called"
 @page.callback(['DEVELOPED_DEFINED_PAYLOAD(.+)'],types=['POSTBACK'])
 def callback_clicked_button(payload,event):
@@ -243,8 +190,6 @@ def callback_clicked_button(payload,event):
     news_id = int(payload[25:])      # bug
     print(dummy)
     print(news_id)
-    image_url = SUMMARIES[news_id][0]
-    summ_ary = SUMMARIES[news_id][1]
     # do something with these text   -> To add Headline
     page.send(sender_id,Attachment.Image(image_url))
     page.send(sender_id,summ_ary)
