@@ -9,6 +9,8 @@ using namespace std ;
 #define ll long long int 
 
 int main(){
+
+        
         ll t , i ,j  ;
         scanf(" %lli",&t);
        	while(t--){

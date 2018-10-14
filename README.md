@@ -2,7 +2,8 @@
 High On Bot 🤖
 </h3>
 
-Just Another Bot
+> Unleash the power of command line with zero dependancy anytime,anywhere.
+
 
 ### Features
 
