@@ -1,7 +1,7 @@
 CONFIG = {
     'FACEBOOK_TOKEN' : "EAAJ4KsDuF3sBAC3ESUywATXRyX6wIFKss4hybCokzaUcj5ZAck1ZASKcXCZB9uIwFd4SPq2CIpvZBZCHOdJmvdX1WzMYpAIqmdwqPNF7B8Cc4bPiPhD3WMjouOLSWsWRZAS3OC0jAnvltVscaZCoWTg6lMEjcGBmRsSqxSZCXeVTpfUEVjZCafdOR",
     'VERIFY_TOKEN' : "this_is_so_much_fun",
-    'SERVER_URL' : "https://hailbot.herokuapp.com/"
+    'SERVER_URL' : "http://759911d4.ngrok.io"
 }
 
 config = {

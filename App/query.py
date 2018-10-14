@@ -24,14 +24,10 @@ def refresh(user):
     user=auth.refresh(user['refreshToken'])
 
 def addUser(senderId,SSH,userid,password):
-  print("="*100)
   refresh(user)
-  print("="*100)
   users=db.get(user['idToken']).val()
-  print("="*100)
-  users[senderId]=[SSH,userid,password]
+  users[senderId]=[SSH,userid,password,"~"]
   db.update(users)
-  print("="*100)
 
 def getUser(senderId):
   refresh(user)
