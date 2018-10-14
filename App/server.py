@@ -83,16 +83,17 @@ def message_handler(event):
     page.typing_off(sender_id)
 
     #print(user_profile)
-    if "username" in message.lower():
-        hostname,username, password = message.split("\n")
-        hostname = hostname[9:]
-        password = password[9:]
-        username = username[9:]
+    # if "username" in message.lower():
+    #     hostname,username, password = message.split("\n")
+    #     hostname = hostname[9:]
+    #     password = password[9:]
+    #     username = username[9:]
 
-        print(hostname,username,password,sender_id)
-        addUser(sender_id,hostname,username,password)
-        page.send(sender_id,"Go Ahead! Have Fun! ")
-    elif "help" not in message.lower():
+    #     print(hostname,username,password,sender_id)
+    #     addUser(sender_id,hostname,username,password)
+    #     page.send(sender_id,"Go Ahead! Have Fun! ")
+    # el
+    if "help" not in message.lower():
         response = getUser(sender_id)
         if response :
             hostname,username,password = getUser(sender_id)
