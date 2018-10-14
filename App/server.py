@@ -65,8 +65,6 @@ def callback_picked_genre(payload, event):
 def webhook():
     payload = request.get_data(as_text=True)
 
-    page.show_persistent_menu([Template.ButtonPostBack('SUB_LIST1', 'MENU_PAYLOAD/1'),
-                           Template.ButtonPostBack('SUB_LIST2', 'MENU_PAYLOAD/2')])
     page.handle_webhook(payload,message = message_handler)
 
     return "ok"
@@ -89,6 +87,7 @@ def message_handler(event):
 
     page.typing_on(sender_id)
     page.typing_off(sender_id)
+    print("="*100)
 
     if "username" in message.lower():
         hostname,username, password = message.split("\n")
@@ -99,6 +98,17 @@ def message_handler(event):
         print(hostname,username,password,sender_id)
         addUser(sender_id,hostname,username,password)
         page.send(sender_id,"Go Ahead! Have Fun! ")
+    if "virtualenv" in message:
+        print("NONE")
+    elif message[:2] == "cd":
+        need_path = message[3:]
+        current_path = os.path.join(os.path.abspath("."),need_path)
+        if os.path.exists(current_path):
+            os.chdir(current_path)
+            new_path = os.path.abspath(".")
+        else:
+            page.send(sender_id,"Path doesn't exist")
+        
     elif "help" not in message.lower():
         response = getUser(sender_id)
         if response :
@@ -116,8 +126,13 @@ def message_handler(event):
             ]
             page.send(sender_id, "Would you like to configure your ssh ",quick_replies=quick_replies,metadata="DEVELOPER_DEFINED_METADATA")
     else:
-        page.send(sender_id,"Provide Help: Carousel")
+        page.send(sender_id, "Just 3 easy steps to follow 🚶")
+        page.send(sender_id, Template.Generic([
+                Template.GenericElement("Connect 🤝",subtitle="",item_url="",image_url="https://i.imgur.com/xXy4kib.png",buttons=[Template.ButtonWeb("Step 1", "https://www.oculus.com/en-us/rift/")]),
+                Template.GenericElement("Add ➕",subtitle="",item_url="",image_url="https://i.imgur.com/RzjPKZM.png",buttons=[Template.ButtonWeb("Step 2", "https://www.oculus.com/en-us/rift/")]),
+                Template.GenericElement("Go ✅",subtitle="",item_url="",image_url="https://i.imgur.com/NmNXnc7.png",buttons=[Template.ButtonWeb("Step 3", "https://www.oculus.com/en-us/rift/")])]))    
     
+
 @page.callback(['PICK_SSH', 'PICK_NSSH'])
 def callback_picked_genre(payload, event):
     sender_id = event.sender_id
@@ -125,12 +140,6 @@ def callback_picked_genre(payload, event):
         page.send(sender_id,"Please Share your credentials \n ( format id: username hostname password ) ")      # TODO
     else:
         page.send(sender_id,"That's just fine")
-
-
-@page.callback(['MENU_PAYLOAD/(.+)'])
-def click_persistent_menu(payload, event):
-    click_menu = payload.split('/')[1]
-    page.send(event.sender_id,"you clicked %s menu" % (click_menu))
 
 
 # @app.route('/authorize', methods=['GET'])
@@ -222,13 +231,10 @@ def click_persistent_menu(payload, event):
 #         '''
 
 def shell_commands(hostname,username,password,command):
-    print("=1"*100)
     client = paramiko.SSHClient()
     client.load_system_host_keys()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    print("=2"*100)
     client.connect(hostname=hostname, username=username, password=password)
-    print("=3"*100)
     stdin, stdout, stderr = client.exec_command(command)
     result = stdout.read()
     client.close()
