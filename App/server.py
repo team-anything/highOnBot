@@ -13,10 +13,12 @@ import pickle
 import messenger
 from config import CONFIG
 from fbpage import page
-import spur
+import paramiko
 from fbmq import Attachment,Template,QuickReply
 import pandas as pd
+from query import * 
 import json
+
 
 app = Flask(__name__)
 
@@ -82,24 +84,22 @@ def message_handler(event):
 
     #print(user_profile)
     if "username" in message.lower():
-        try:
-            hostname,username, password = message.split("\n")
-            hostname = hostname[9:]
-            password = password[9:]
-            username = username[9:]
+        hostname,username, password = message.split("\n")
+        hostname = hostname[9:]
+        password = password[9:]
+        username = username[9:]
 
-            print(hostname,username,password)
-            addUser(sender_id,hostname,username,password)
-            page.send(sender_id,"Go Ahead! Have Fun! ")
-        except:
-            page.send(sender_id,"Error Occured: try `help` ")
+        print(hostname,username,password,sender_id)
+        addUser(sender_id,hostname,username,password)
+        page.send(sender_id,"Go Ahead! Have Fun! ")
     elif "help" not in message.lower():
-        try :
+        response = getUser(sender_id)
+        if response :
             hostname,username,password = getUser(sender_id)
-            shell_commands(hostname,username,password)
+            shell_commands(hostname,username,password,message)
             page.send(sender_id,"Running ssh commmand")
             print("Bot results!")
-        except:
+        else:
             quick_replies = [
             QuickReply(title="Yeah !", payload="PICK_SSH"),
             QuickReply(title="Nah ", payload="PICK_NSSH")
@@ -211,11 +211,16 @@ def click_persistent_menu(payload, event):
 #                 { "title": "View Less", "type": "postback", "payload": "payload"}]))
 #         '''
 
-def shell_commands():
-    shell = spur.SshShell(hostname="", username="", password="",missing_host_key=spur.ssh.MissingHostKey.accept)
-    with shell:
-        result = shell.run(["ls"])
-    print(result.output) # PARSE
+def shell_commands(hostname,username,password,command):
+    try:
+        client = paramiko.SSHClient()
+        client.load_system_host_keys()
+        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        client.connect(hostname=hostname, username=username, password=password)
+        stdin, stdout, stderr = client.exec_command(command)
+        print(stdout.read())
+    finally:
+        client.close()
 
 # Triggered off "PostBack Called"
 @page.callback(['DEVELOPED_DEFINED_PAYLOAD(.+)'],types=['POSTBACK'])

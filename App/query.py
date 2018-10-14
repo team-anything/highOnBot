@@ -36,7 +36,10 @@ def addUser(senderId,SSH,userid,password):
 def getUser(senderId):
   refresh(user)
   users=db.get(user['idToken']).val()
-  return users[senderId]
+  if users.get(senderId,0):
+    return users[senderId]
+  else:
+    return False
 
 if __name__ == "__main__":
   addUser("123","1912","1021","@dhw9hd")
