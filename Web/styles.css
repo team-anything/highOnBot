@@ -1,0 +1,66 @@
+html{
+  scroll-behavior: smooth;
+}
+.heading{
+  font-size: 100px;
+  text-align: center;
+  font-family: 'K2D', sans-serif;
+}
+.short-desc{ 
+  margin-top: 0px;
+  font-size: 30px;
+  text-align: center;
+}
+#box {
+  transition: box-shadow .3s;
+}
+#box:hover {
+  box-shadow: 0 0 50px rgba(33,33,33,.8); 
+}
+img{
+  width: 100%;
+}
+#about{
+  margin: auto;
+  text-align: center;
+  font-size:20px;
+}
+/* Style the tab */
+.tab {
+  background-color: #0099CC;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #ccc;
+}
+.tablinks{
+  width:33.33%;
+}
+
+/* Style the buttons that are used to open the tab content */
+.tab button {
+  background-color: inherit;
+  float: left;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 14px 16px;
+  transition: 0.3s;
+}
+
+/* Change background color of buttons on hover */
+.tab button:hover { 
+  background-color: #ddd; 
+ } 
+
+/* Create an active/current tablink class */
+.tab button.active {
+  background-color: #ccc;
+}
+
+/* Style the tab content */
+.tabcontent {
+  display: none;
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  border-top: none;
+}
