@@ -23,15 +23,11 @@ db = firebase.database()
 def refresh(user):
     user=auth.refresh(user['refreshToken'])
 
-def addUser(senderId,SSH,userid,password):
-  print("="*100)
+def addUser(senderId,SSH,userid,password,current_path):
   refresh(user)
-  print("="*100)
   users=db.get(user['idToken']).val()
-  print("="*100)
-  users[senderId]=[SSH,userid,password]
+  users[senderId]=[SSH,userid,password,current_path]
   db.update(users)
-  print("="*100)
 
 def getUser(senderId):
   refresh(user)
@@ -53,6 +49,8 @@ def updatePath(senderId,path):
   refresh(user)
   users=db.get(user['idToken']).val()
   users[senderId][3]=path
+  db.update(users)
+
 
 
 if __name__ == "__main__":

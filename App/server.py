@@ -1,6 +1,5 @@
 # coding: utf-8
 
-dummy = "***"*100
 '''
 has globals : primary_key
 '''
@@ -23,10 +22,9 @@ import fbmq
 
 app = Flask(__name__)
 
-help_text = '''
+def debug(i):
+    print("="+str(i)*100)
 
-
-'''
 
 
 @app.route('/webhook', methods=['GET'])
@@ -96,43 +94,59 @@ def message_handler(event):
         username = username[9:]
 
         print(hostname,username,password,sender_id)
-        addUser(sender_id,hostname,username,password)
-        page.send(sender_id,"Go Ahead! Have Fun! ")
-    if "virtualenv" in message:
-        print("NONE")
-    elif message[:2] == "cd":
-        need_path = message[3:]
-        current_path = os.path.join(os.path.abspath("."),need_path)
-        if os.path.exists(current_path):
-            os.chdir(current_path)
-            new_path = os.path.abspath(".")
-        else:
-            page.send(sender_id,"Path doesn't exist")
-        
-    elif "help" not in message.lower():
-        response = getUser(sender_id)
-        if response :
-            hostname,username,password = getUser(sender_id)
-            print(hostname,username,password,message)
+        current_path =  str(shell_commands(hostname,username,password,"pwd").decode("utf-8"))[:-1]
+        addUser(sender_id,hostname,username,password,current_path)
 
-            result = shell_commands(hostname,username,password,message)
-            result = result.decode("utf-8")
-            page.send(sender_id,result)
-            print("Bot results!")
-        else:
-            quick_replies = [
-            QuickReply(title="Yeah !", payload="PICK_SSH"),
-            QuickReply(title="Nah ", payload="PICK_NSSH")
-            ]
-            page.send(sender_id, "Would you like to configure your ssh ",quick_replies=quick_replies,metadata="DEVELOPER_DEFINED_METADATA")
-    else:
+        page.send(sender_id,"Go Ahead! Have Fun! ")
+    elif "help" in message:
         page.send(sender_id, "Just 3 easy steps to follow 🚶")
         page.send(sender_id, Template.Generic([
-                Template.GenericElement("Connect 🤝",subtitle="",item_url="",image_url="https://i.imgur.com/xXy4kib.png",buttons=[Template.ButtonWeb("Step 1", "https://www.oculus.com/en-us/rift/")]),
-                Template.GenericElement("Add ➕",subtitle="",item_url="",image_url="https://i.imgur.com/RzjPKZM.png",buttons=[Template.ButtonWeb("Step 2", "https://www.oculus.com/en-us/rift/")]),
-                Template.GenericElement("Go ✅",subtitle="",item_url="",image_url="https://i.imgur.com/NmNXnc7.png",buttons=[Template.ButtonWeb("Step 3", "https://www.oculus.com/en-us/rift/")])]))    
-    
+            Template.GenericElement("Connect 🤝",subtitle="",item_url="",image_url="https://i.imgur.com/xXy4kib.png",buttons=[Template.ButtonWeb("Step 1", "https://www.oculus.com/en-us/rift/")]),
+            Template.GenericElement("Add ➕",subtitle="",item_url="",image_url="https://i.imgur.com/RzjPKZM.png",buttons=[Template.ButtonWeb("Step 2", "https://www.oculus.com/en-us/rift/")]),
+            Template.GenericElement("Go ✅",subtitle="",item_url="",image_url="https://i.imgur.com/NmNXnc7.png",buttons=[Template.ButtonWeb("Step 3", "https://www.oculus.com/en-us/rift/")])]))    
+    else:
+        response = getUser(sender_id)
 
+        if not response:
+            quick_replies = [
+                QuickReply(title="Yeah !", payload="PICK_SSH"),
+                QuickReply(title="Nah ", payload="PICK_NSSH")
+                ]
+            page.send(sender_id, "Would you like to configure your ssh ",quick_replies=quick_replies,metadata="DEVELOPER_DEFINED_METADATA")
+        else:
+            # print(hostname,username,password,message)
+            hostname,username,password,current_path = response
+
+            if message[:2] == "cd":
+                # add cd
+                need_path = message[3:]
+                current_path = os.path.join(current_path,need_path)
+                try:
+                    new_path =  str(shell_commands(hostname,username,password,"cd "+current_path+"; pwd").decode("utf-8"))[:-1]
+                    updatePath(sender_id,new_path)
+                    page.send(sender_id,"Your Current Directory:\n"+new_path)
+                except:                    
+                    page.send(sender_id,"Path doesn't exist")
+            elif "send" in message:
+                file_name = message.split()[-1]
+                if send_commands(current_path+"/"+file_name,file_name,hostname,username,password):
+                    debug(659)
+                    print(CONFIG['SERVER_URL']+"/"+file_name)
+                    os.rename("./"+file_name, "./static/"+file_name)
+                    page.send(sender_id,"Here You Go!")
+                    page.send(sender_id, Attachment.File(CONFIG['SERVER_URL']+"/static/"+file_name))
+                else:
+                    page.send(sender_id, "Error Accessing the file !!")
+            elif message!="Nah ":
+                try:
+                    result = str(shell_commands(hostname,username,password,"cd "+current_path+"; "+message).decode("utf-8"))
+                    result = result[:min(150,len(result))]
+                    page.send(sender_id,result)
+                except:
+                    page.send(sender_id,"Unknown Output!")
+
+            print("Bot results!")
+    
 @page.callback(['PICK_SSH', 'PICK_NSSH'])
 def callback_picked_genre(payload, event):
     sender_id = event.sender_id
@@ -142,20 +156,20 @@ def callback_picked_genre(payload, event):
         page.send(sender_id,"That's just fine")
 
 
-# @app.route('/authorize', methods=['GET'])
-# def authorize():
-#     account_linking_token = request.args.get('account_linking_token', '')
-#     redirect_uri = request.args.get('redirect_uri', '')
+@app.route('/authorize', methods=['GET'])
+def authorize():
+    account_linking_token = request.args.get('account_linking_token', '')
+    redirect_uri = request.args.get('redirect_uri', '')
 
-#     auth_code = '1234567890'
+    auth_code = '1234567890'
 
-#     redirect_uri_success = redirect_uri + "&authorization_code=" + auth_code
+    redirect_uri_success = redirect_uri + "&authorization_code=" + auth_code
 
-#     return render_template('authorize.html', data={
-#         'account_linking_token': account_linking_token,
-#         'redirect_uri': redirect_uri,
-#         'redirect_uri_success': redirect_uri_success
-#     })
+    return render_template('authorize.html', data={
+        'account_linking_token': account_linking_token,
+        'redirect_uri': redirect_uri,
+        'redirect_uri_success': redirect_uri_success
+    })
 
 # # only issue , sends blobs
 # ##@app.before_first_request
@@ -239,6 +253,22 @@ def shell_commands(hostname,username,password,command):
     result = stdout.read()
     client.close()
     return result
+
+def send_commands(from_path,remote_path,hostname,username,password):
+    client = paramiko.SSHClient()
+    client.load_system_host_keys()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    client.connect(hostname=hostname, username=username, password=password)
+    try:
+        sftp = client.open_sftp()
+        debug(2)
+        print(from_path,remote_path)
+        sftp.get(from_path, remote_path)
+        debug(3)
+        return True
+    except Exception as e:
+        print(e)
+        return False
 
 # def shell_commands(hostname,username,password,command):
 #     shell = spur.SshShell(hostname=hostname, username=username, password=password,missing_host_key=spur.ssh.MissingHostKey.accept)
