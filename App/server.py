@@ -13,18 +13,24 @@ import pickle
 import messenger
 from config import CONFIG
 from fbpage import page
-import paramiko
+import paramiko,spur
 from fbmq import Attachment,Template,QuickReply
 import pandas as pd
 from query import * 
 import json
-
+import fbmq
 
 app = Flask(__name__)
+
+help_text = '''
+
+
+'''
 
 
 @app.route('/webhook', methods=['GET'])
 def validate():
+    #shell_commands(hostname="192.168.14.189",username="Nishchith",password="@randombits98",command="ls")
     if request.args.get('hub.mode', '') == 'subscribe' and \
                     request.args.get('hub.verify_token', '') == CONFIG['VERIFY_TOKEN']:
 
@@ -34,30 +40,30 @@ def validate():
     else:
         return 'Failed validation. Make sure the validation tokens match.'
 
-# page.show_starting_button("START_PAYLOAD")       # Getting Started
+page.show_starting_button("START_PAYLOAD")       # Getting Started
 
-# @page.callback(['START_PAYLOAD'])
-# def start_callback(payload, event):
-#     sender_id = event.sender_id
-#     quick_replies = [
-#             QuickReply(title="Yeah !", payload="PICK_SYNC"),
-#             QuickReply(title="Nah ", payload="PICK_DSYNC")
-#             ]
-#     page.send(sender_id, "Would you like to sync this conversation ?\n you can subscribe etc. ",quick_replies=quick_replies,metadata="DEVELOPER_DEFINED_METADATA")
-#     print("Let's start!")
+@page.callback(['START_PAYLOAD'])
+def start_callback(payload, event):
+    sender_id = event.sender_id
+    quick_replies = [
+            QuickReply(title="Yeah !", payload="PICK_CONF"),
+            QuickReply(title="Nah ", payload="PICK_NCONF")
+            ]
+    page.send(sender_id, "Would you like to configure your ssh ",quick_replies=quick_replies,metadata="DEVELOPER_DEFINED_METADATA")
+    print("Let's start!")
 
-# @page.callback(['PICK_SYNC', 'PICK_DSYNC'])
-# def callback_picked_genre(payload, event):
-#     sender_id = event.sender_id
-#     if payload == "PICK_SYNC":
-#         page.send(sender_id,"Please Share your *Briefly* username \n ( format id: username ) ")      # TODO
-#     else:
-#         page.send(sender_id,"Go ahead ;) Play Around for some time ")
+@page.callback(['PICK_CONF', 'PICK_NCONF'])
+def callback_picked_genre(payload, event):
+    sender_id = event.sender_id
+    if payload == "PICK_CONF":
+        page.send(sender_id,"Please Share your credentials \n ( format id: username hostname password ) ")      # TODO
+    else:
+        page.send(sender_id,"Go ahead ;) Play Around for some time ")
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
     payload = request.get_data(as_text=True)
-    print(payload)
+
     page.show_persistent_menu([Template.ButtonPostBack('SUB_LIST1', 'MENU_PAYLOAD/1'),
                            Template.ButtonPostBack('SUB_LIST2', 'MENU_PAYLOAD/2')])
     page.handle_webhook(payload,message = message_handler)
@@ -67,6 +73,7 @@ def webhook():
 @page.handle_message
 def message_handler(event):
     """:type event: fbmq.Event"""
+
     sender_id = event.sender_id
     message = event.message_text
 
@@ -82,32 +89,33 @@ def message_handler(event):
     page.typing_on(sender_id)
     page.typing_off(sender_id)
 
-    #print(user_profile)
-    # if "username" in message.lower():
-    #     hostname,username, password = message.split("\n")
-    #     hostname = hostname[9:]
-    #     password = password[9:]
-    #     username = username[9:]
+    if "username" in message.lower():
+        hostname,username, password = message.split("\n")
+        hostname = hostname[9:]
+        password = password[9:]
+        username = username[9:]
 
-    #     print(hostname,username,password,sender_id)
-    #     addUser(sender_id,hostname,username,password)
-    #     page.send(sender_id,"Go Ahead! Have Fun! ")
-    # el
-    # if "help" not in message.lower():
-    #     response = getUser(sender_id)
-    #     if response :
-    #         hostname,username,password = getUser(sender_id)
-    #         shell_commands(hostname,username,password,message)
-    #         page.send(sender_id,"Running ssh commmand")
-    #         print("Bot results!")
-    #     else:
-    #         quick_replies = [
-    #         QuickReply(title="Yeah !", payload="PICK_SSH"),
-    #         QuickReply(title="Nah ", payload="PICK_NSSH")
-    #         ]
-    #         page.send(sender_id, "Would you like to configure your ssh ",quick_replies=quick_replies,metadata="DEVELOPER_DEFINED_METADATA")
-    # else:
-    page.send(sender_id,"Provide Help: Carousel")
+        print(hostname,username,password,sender_id)
+        addUser(sender_id,hostname,username,password)
+        page.send(sender_id,"Go Ahead! Have Fun! ")
+    elif "help" not in message.lower():
+        response = getUser(sender_id)
+        if response :
+            hostname,username,password = getUser(sender_id)
+            print(hostname,username,password,message)
+
+            result = shell_commands(hostname,username,password,message)
+            result = result.decode("utf-8")
+            page.send(sender_id,result)
+            print("Bot results!")
+        else:
+            quick_replies = [
+            QuickReply(title="Yeah !", payload="PICK_SSH"),
+            QuickReply(title="Nah ", payload="PICK_NSSH")
+            ]
+            page.send(sender_id, "Would you like to configure your ssh ",quick_replies=quick_replies,metadata="DEVELOPER_DEFINED_METADATA")
+    else:
+        page.send(sender_id,"Provide Help: Carousel")
     
 @page.callback(['PICK_SSH', 'PICK_NSSH'])
 def callback_picked_genre(payload, event):
@@ -213,15 +221,23 @@ def click_persistent_menu(payload, event):
 #         '''
 
 def shell_commands(hostname,username,password,command):
-    try:
-        client = paramiko.SSHClient()
-        client.load_system_host_keys()
-        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        client.connect(hostname=hostname, username=username, password=password)
-        stdin, stdout, stderr = client.exec_command(command)
-        print(stdout.read())
-    finally:
-        client.close()
+    print("=1"*100)
+    client = paramiko.SSHClient()
+    client.load_system_host_keys()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    print("=2"*100)
+    client.connect(hostname=hostname, username=username, password=password)
+    print("=3"*100)
+    stdin, stdout, stderr = client.exec_command(command)
+    result = stdout.read()
+    client.close()
+    return result
+
+# def shell_commands(hostname,username,password,command):
+#     shell = spur.SshShell(hostname=hostname, username=username, password=password,missing_host_key=spur.ssh.MissingHostKey.accept)
+#     with shell:
+#         result = shell.run([command],allow_error=True)
+#     print(result.output) # PARSE
 
 # Triggered off "PostBack Called"
 @page.callback(['DEVELOPED_DEFINED_PAYLOAD(.+)'],types=['POSTBACK'])
@@ -236,4 +252,4 @@ def callback_clicked_button(payload,event):
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080, threaded=True,debug=True,use_reloader=False)
+    app.run(host='0.0.0.0', port=8080,debug=True,use_reloader=False)
