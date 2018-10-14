@@ -93,21 +93,21 @@ def message_handler(event):
     #     addUser(sender_id,hostname,username,password)
     #     page.send(sender_id,"Go Ahead! Have Fun! ")
     # el
-    if "help" not in message.lower():
-        response = getUser(sender_id)
-        if response :
-            hostname,username,password = getUser(sender_id)
-            shell_commands(hostname,username,password,message)
-            page.send(sender_id,"Running ssh commmand")
-            print("Bot results!")
-        else:
-            quick_replies = [
-            QuickReply(title="Yeah !", payload="PICK_SSH"),
-            QuickReply(title="Nah ", payload="PICK_NSSH")
-            ]
-            page.send(sender_id, "Would you like to configure your ssh ",quick_replies=quick_replies,metadata="DEVELOPER_DEFINED_METADATA")
-    else:
-        page.send(sender_id,"Provide Help: Carousel")
+    # if "help" not in message.lower():
+    #     response = getUser(sender_id)
+    #     if response :
+    #         hostname,username,password = getUser(sender_id)
+    #         shell_commands(hostname,username,password,message)
+    #         page.send(sender_id,"Running ssh commmand")
+    #         print("Bot results!")
+    #     else:
+    #         quick_replies = [
+    #         QuickReply(title="Yeah !", payload="PICK_SSH"),
+    #         QuickReply(title="Nah ", payload="PICK_NSSH")
+    #         ]
+    #         page.send(sender_id, "Would you like to configure your ssh ",quick_replies=quick_replies,metadata="DEVELOPER_DEFINED_METADATA")
+    # else:
+    page.send(sender_id,"Provide Help: Carousel")
     
 @page.callback(['PICK_SSH', 'PICK_NSSH'])
 def callback_picked_genre(payload, event):
