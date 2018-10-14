@@ -13,7 +13,7 @@ import pickle
 import messenger
 from config import CONFIG
 from fbpage import page
-import spur
+import paramiko
 from fbmq import Attachment,Template,QuickReply
 import pandas as pd
 import json
@@ -209,11 +209,16 @@ def click_persistent_menu(payload, event):
 #                 { "title": "View Less", "type": "postback", "payload": "payload"}]))
 #         '''
 
-def shell_commands():
-    shell = spur.SshShell(hostname="", username="", password="",missing_host_key=spur.ssh.MissingHostKey.accept)
-    with shell:
-        result = shell.run(["ls"])
-    print(result.output) # PARSE
+def shell_commands(hostname,username,password,command):
+    try:
+        client = paramiko.SSHClient()
+        client.load_system_host_keys()
+        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        client.connect(hostname=hostname, username=username, password=password)
+        stdin, stdout, stderr = client.exec_command(command)
+        print(stdout.read())
+    finally:
+        client.close()
 
 # Triggered off "PostBack Called"
 @page.callback(['DEVELOPED_DEFINED_PAYLOAD(.+)'],types=['POSTBACK'])
