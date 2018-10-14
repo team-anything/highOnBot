@@ -20,6 +20,7 @@ from query import *
 import json
 import fbmq
 
+
 app = Flask(__name__)
 
 help_text = '''
