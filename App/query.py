@@ -41,5 +41,19 @@ def getUser(senderId):
   else:
     return False
 
+def getPath(senderId):
+  refresh(user)
+  users=db.get(user['idToken']).val()
+  if users.get(senderId,0):
+    return users[senderId][3]
+  else:
+    return False
+
+def updatePath(senderId,path):
+  refresh(user)
+  users=db.get(user['idToken']).val()
+  users[senderId][3]=path
+
+
 if __name__ == "__main__":
   addUser("123","1912","1021","@dhw9hd")
