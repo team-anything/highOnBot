@@ -1,8 +1,9 @@
 <h3 align="center">
 High On Bot 🤖
 </h3>
-
+<div align="center">
 Not Just Any Another Bot
+</div>
 
 ### Features
 
@@ -13,8 +14,9 @@ Not Just Any Another Bot
 <div align="center">
 <h3> Demo </h3>
 <br>
-<img src="UI/sms-simulate1.gif" width=255px height=450px>
-<img src="UI/sms-simulate2.gif" width=255px height=450px>
+<img src="./assets/1.gif" width=255px height=450px>
+<img src="./assets/2.gif" width=255px height=450px>
+<img src="./assets/3.gif" width=255px height=450px>
 </div>
 
 <div align="center">
