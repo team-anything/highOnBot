@@ -2,7 +2,7 @@
 High On Bot 🤖
 </h3>
 
-Just Another Bot
+Not Just Any Another Bot
 
 ### Features
 
