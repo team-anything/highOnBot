@@ -1,8 +1,9 @@
 <h3 align="center">
 High On Bot 🤖
 </h3>
-
+<div align="center">
 Not Just Any Another Bot
+</div>
 
 ### Features
 
