@@ -1,21 +1,23 @@
 <h3 align="center">
-High On Bot 🤖
+<img width=200px height=200px src="Web/robot.png"></a>
+High On Bot
 </h3>
-
-> Unleash the power of command line with zero dependancy anytime,anywhere.
-
+<div align="center">
+Not Just Any Other Bot
+</div>
 
 ### Features
 
-- Command Line Utility "remotely" via facebook messenger 
+- Command Line Utility "remotely" via facebook messenger
 - Available on all three platforms [ MacOS, Windows, Linux ]
-- 100+ commands right from your phone 
+- 100+ commands right from your phone
 
 <div align="center">
 <h3> Demo </h3>
 <br>
-<img src="UI/sms-simulate1.gif" width=255px height=450px>
-<img src="UI/sms-simulate2.gif" width=255px height=450px>
+<img src="./assets/1.gif" width=255px height=450px>
+<img src="./assets/2.gif" width=255px height=450px>
+<img src="./assets/3.gif" width=255px height=450px>
 </div>
 
 <div align="center">
@@ -37,12 +39,11 @@ High On Bot 🤖
 ### Commands Supported
 
 - [x] Git Commands
-- [x] Utility Commands 
+- [x] Utility Commands
 - [ ] Many More
 
 ### Challenges we ran into :
 
 > The main task that we faced was to gain access to any given PC in the world. Usually for developers Command Line is there life saver and being able to provide that was a challenge. To get the various commands to work properly and presented the given data in readable format was also a challenge. Not to forget to get various files remotely for download via sftp protocol was also needed somewhere which none of us had been experienced in.
 
-
-* Recognition : [Hack InOut 2018](http://hackinout.co)
+- Recognition : [Hack InOut 2018](http://hackinout.co)

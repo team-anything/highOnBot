@@ -1,7 +1,7 @@
 import pyrebase
 
 config = {
-  "apiKey": "AIzaSyA039WLLPkdWZeSpCSc6ilUgygLgSgGylg",
+  "apiKey": "",
   "authDomain": "highonbot-fee46.firebaseapp.com",
   "databaseURL": "https://highonbot-fee46.firebaseio.com",
   "storageBucket": "highonbot-fee46.appspot.com"
